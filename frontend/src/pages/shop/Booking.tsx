@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
+import { Servicio } from '../../types/catalog';
+import PoliticaCancelacion from '../../components/PoliticaCancelacion';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS = ['LU', 'MA', 'MI', 'JU', 'VI', 'SA', 'DO'];
 
 interface BookingState {
-  service: string | null;
+  serviceId: number | null;
+  serviceName: string | null;
   servicePrice: number;
   pro: string | null;
   date: { d: number; m: number; y: number } | null;
@@ -12,37 +18,110 @@ interface BookingState {
 }
 
 const Booking: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, cliente } = useAuth();
+
   const [state, setState] = useState<BookingState>({
-    service: null,
+    serviceId: null,
+    serviceName: null,
     servicePrice: 0,
     pro: null,
     date: null,
     time: null,
   });
+
+  const [services, setServices] = useState<Servicio[]>([]);
+  const [slots, setSlots] = useState<{ hora: string; disponible: boolean }[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successCita, setSuccessCita] = useState<any>(null);
+  const [politicaAceptada, setPoliticaAceptada] = useState(false);
+
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
   const [calYear, setCalYear] = useState(new Date().getFullYear());
   const [page, setPage] = useState<'booking' | 'success'>('booking');
 
-  const allDone = state.service && state.pro && state.date && state.time;
+  // Redirigir si no está autenticado
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
-  const updateSummary = (newState: BookingState) => {
-    setState(newState);
-  };
+  // Cargar servicios reales
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoadingServices(true);
+        const response = await api.get<Servicio[]>('/services');
+        setServices(response.data);
+      } catch (err) {
+        console.error('Error al cargar servicios:', err);
+        setErrorMsg('Error al cargar el catálogo de servicios.');
+      } finally {
+        setLoadingServices(false);
+      }
+    };
+    if (isAuthenticated) {
+      loadServices();
+    }
+  }, [isAuthenticated]);
 
-  const selectService = (name: string, price: number) => {
-    updateSummary({ ...state, service: name, servicePrice: price });
+  // Cargar slots disponibles cuando cambia la fecha o el servicio
+  useEffect(() => {
+    const loadSlots = async () => {
+      if (!state.date || !state.serviceId) {
+        setSlots([]);
+        return;
+      }
+      try {
+        setLoadingSlots(true);
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const fechaStr = `${state.date.y}-${pad(state.date.m + 1)}-${pad(state.date.d)}`;
+        const response = await api.get('/appointments/available-slots', {
+          params: {
+            fecha: fechaStr,
+            idServicio: state.serviceId,
+          },
+        });
+        setSlots(response.data);
+      } catch (err) {
+        console.error('Error al cargar franjas horarias:', err);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    loadSlots();
+  }, [state.date, state.serviceId]);
+
+  const allDone = state.serviceId && state.pro && state.date && state.time && politicaAceptada;
+
+  const selectService = (svc: Servicio) => {
+    setState({
+      ...state,
+      serviceId: svc.id,
+      serviceName: svc.nombre,
+      servicePrice: svc.precioMinimo,
+      time: null, // resetear hora al cambiar servicio
+    });
   };
 
   const selectPro = (name: string) => {
-    updateSummary({ ...state, pro: name });
+    setState({ ...state, pro: name });
   };
 
   const selectTime = (time: string) => {
-    updateSummary({ ...state, time });
+    setState({ ...state, time });
   };
 
   const selectDay = (day: number) => {
-    updateSummary({ ...state, date: { d: day, m: calMonth, y: calYear } });
+    setState({
+      ...state,
+      date: { d: day, m: calMonth, y: calYear },
+      time: null, // resetear hora al cambiar fecha
+    });
   };
 
   const renderCalendar = () => {
@@ -78,13 +157,38 @@ const Booking: React.FC = () => {
     return cells;
   };
 
-  const goToSuccess = () => {
-    setPage('success');
+  const handleConfirmBooking = async () => {
+    if (!allDone || !state.date || !state.serviceId || !state.time) return;
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      const fechaStr = `${state.date.y}-${pad(state.date.m + 1)}-${pad(state.date.d)}`;
+      
+      const response = await api.post('/appointments', {
+        idServicio: state.serviceId,
+        fecha: fechaStr,
+        hora: state.time,
+      });
+
+      setSuccessCita(response.data);
+      setPage('success');
+    } catch (err: any) {
+      console.error('Error al crear cita:', err);
+      setErrorMsg(err.response?.data?.error || 'No se pudo programar la cita. Verifica la disponibilidad.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetFlow = () => {
-    setState({ service: null, servicePrice: 0, pro: null, date: null, time: null });
+    setState({ serviceId: null, serviceName: null, servicePrice: 0, pro: null, date: null, time: null });
     setPage('booking');
+    setErrorMsg(null);
+    setSuccessCita(null);
+    setPoliticaAceptada(false);
   };
 
   return (
@@ -98,29 +202,78 @@ const Booking: React.FC = () => {
               <p>Reserva tu experiencia personalizada en unos pocos pasos.</p>
             </div>
 
+            {errorMsg && (
+              <div style={{
+                background: 'rgba(200, 60, 60, 0.08)',
+                border: '1px solid rgba(200, 60, 60, 0.2)',
+                borderRadius: '8px',
+                padding: '1rem',
+                color: '#b03030',
+                marginBottom: '2rem',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+              }}>
+                {errorMsg}
+              </div>
+            )}
+
             <div className="booking-layout">
               <div className="booking-steps">
+                {/* DATOS DE CLIENTE (AUTO-COMPLETADOS Y READONLY) */}
+                <div className="step-block">
+                  <div className="step-label">Datos del Cliente</div>
+                  <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr', marginBottom: '1rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Nombre Completo</label>
+                      <input 
+                        type="text" 
+                        value={cliente?.nombreCompleto || ''} 
+                        readOnly 
+                        className="form-input" 
+                        style={{ cursor: 'not-allowed', opacity: 0.8 }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Teléfono</label>
+                      <input 
+                        type="text" 
+                        value={cliente?.telefono || ''} 
+                        readOnly 
+                        className="form-input" 
+                        style={{ cursor: 'not-allowed', opacity: 0.8 }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* STEP 1: SERVICE */}
                 <div className="step-block">
                   <div className="step-label">1. Selecciona un Servicio</div>
                   <div className="service-list">
-                    {[
-                      { name: 'Corte & Styling Premium', meta: '90 min · S/120.00', price: 120 },
-                      { name: 'Coloración Orgánica', meta: '120 min · S/150.00', price: 150 },
-                      { name: 'Tratamiento Hidratante', meta: '45 min · S/85.00', price: 85 },
-                    ].map((svc, i) => (
-                      <div
-                        key={i}
-                        className={`service-item${state.service === svc.name ? ' selected' : ''}`}
-                        onClick={() => selectService(svc.name, svc.price)}
-                      >
-                        <div>
-                          <div className="svc-name">{svc.name}</div>
-                          <div className="svc-meta">{svc.meta}</div>
+                    {loadingServices ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '1rem' }}>Cargando catálogo de servicios...</div>
+                    ) : services.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: 'var(--muted)', padding: '1rem' }}>No hay servicios disponibles.</div>
+                    ) : (
+                      services.map((svc) => (
+                        <div
+                          key={svc.id}
+                          className={`service-item${state.serviceId === svc.id ? ' selected' : ''}`}
+                          onClick={() => selectService(svc)}
+                        >
+                          <div>
+                            <div className="svc-name">{svc.nombre}</div>
+                            <div className="svc-meta">
+                              {svc.descripcion && `${svc.descripcion} · `}
+                              {svc.precioMaximo 
+                                ? `S/${svc.precioMinimo.toFixed(2)} - S/${svc.precioMaximo.toFixed(2)}` 
+                                : `S/${svc.precioMinimo.toFixed(2)}`}
+                            </div>
+                          </div>
+                          <div className="check">✓</div>
                         </div>
-                        <div className="check">✓</div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -167,16 +320,35 @@ const Booking: React.FC = () => {
                   </div>
 
                   <div className="time-grid">
-                    {['09:00 AM', '10:30 AM', '12:00 PM', '02:30 PM', '04:00 PM', '05:30 PM'].map((t) => (
-                      <div
-                        key={t}
-                        className={`time-slot${state.time === t ? ' selected' : ''}`}
-                        onClick={() => selectTime(t)}
-                      >
-                        {t}
-                      </div>
-                    ))}
+                    {loadingSlots ? (
+                      <div style={{ gridColumn: 'span 3', textAlign: 'center', color: 'var(--muted)', padding: '1rem' }}>Cargando horarios disponibles...</div>
+                    ) : !state.date || !state.serviceId ? (
+                      <div style={{ gridColumn: 'span 3', textAlign: 'center', color: 'var(--muted)', padding: '1rem' }}>Selecciona un servicio y una fecha para ver horarios.</div>
+                    ) : slots.length === 0 ? (
+                      <div style={{ gridColumn: 'span 3', textAlign: 'center', color: 'var(--muted)', padding: '1rem' }}>No hay horarios disponibles para esta fecha.</div>
+                    ) : (
+                      slots.map((s) => (
+                        <div
+                          key={s.hora}
+                          className={`time-slot${state.time === s.hora ? ' selected' : ''}${!s.disponible ? ' disabled' : ''}`}
+                          onClick={() => s.disponible && selectTime(s.hora)}
+                          style={!s.disponible ? { opacity: 0.5, cursor: 'not-allowed', textDecoration: 'line-through' } : {}}
+                        >
+                          {s.hora}
+                        </div>
+                      ))
+                    )}
                   </div>
+                </div>
+
+                {/* STEP 4: POLITICA CANCELACION */}
+                <div className="step-block">
+                  <div className="step-label">4. Políticas de Cancelación</div>
+                  <PoliticaCancelacion
+                    aceptado={politicaAceptada}
+                    onAceptarChange={setPoliticaAceptada}
+                    mostrarCheckbox={true}
+                  />
                 </div>
               </div>
 
@@ -187,8 +359,8 @@ const Booking: React.FC = () => {
 
                   <div className="summary-field">
                     <div className="summary-field-label">Servicio</div>
-                    <div className={`summary-field-val${!state.service ? ' placeholder' : ''}`}>
-                      {state.service || '—'}
+                    <div className={`summary-field-val${!state.serviceName ? ' placeholder' : ''}`}>
+                      {state.serviceName || '—'}
                     </div>
                   </div>
 
@@ -217,8 +389,8 @@ const Booking: React.FC = () => {
                     </div>
                   </div>
 
-                  <button className="confirm-btn" disabled={!allDone} onClick={goToSuccess}>
-                    Confirmar Reserva
+                  <button className="confirm-btn" disabled={!allDone || isSubmitting} onClick={handleConfirmBooking}>
+                    {isSubmitting ? 'Confirmando...' : 'Confirmar Reserva'}
                   </button>
 
                   <div className="cancel-note">
@@ -246,8 +418,12 @@ const Booking: React.FC = () => {
 
               <div className="booking-summary-box">
                 <div className="bs-row">
+                  <span className="key">ID de Cita</span>
+                  <span className="val">#{successCita?.id || '—'}</span>
+                </div>
+                <div className="bs-row">
                   <span className="key">Servicio</span>
-                  <span className="val">{state.service || '—'}</span>
+                  <span className="val">{state.serviceName || '—'}</span>
                 </div>
                 <div className="bs-row">
                   <span className="key">Profesional</span>
