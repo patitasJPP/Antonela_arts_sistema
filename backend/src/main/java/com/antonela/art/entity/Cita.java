@@ -17,7 +17,8 @@ public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+// la funcion de SQL de muchos a uno el fetch simpremente hace que no traiga nada de la base de datos a menos que se lo pida
+    //con get
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cliente", nullable = false)
     private Cliente cliente;
