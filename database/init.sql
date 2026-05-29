@@ -3,7 +3,7 @@
 -- ============================================================
 
 -- Crear base de datos (ejecutar manualmente si es necesario)
--- CREATE DATABASE antonela_art_salon;
+CREATE DATABASE antonela_art_salon;
 
 -- ============================================================
 -- TABLAS
@@ -185,3 +185,4 @@ INSERT INTO politica_cancelacion (horas_anticipacion_minimas, porcentaje_reembol
 -- Usuario admin por defecto (contrasena: admin123, hasheada con BCrypt)
 INSERT INTO usuarios_admin (nombre_usuario, contrasena_hash, rol) VALUES
 ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin');
+    
