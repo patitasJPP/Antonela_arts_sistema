@@ -41,7 +41,7 @@ public class CheckoutService {
 
         // 3. Generar IDs únicos
         String timestamp = String.valueOf(Instant.now().getEpochSecond());
-        String randomSuffix = UUID.randomUUID().toString().substring(0, 5);
+        String randomSuffix = String.valueOf((int)(Math.random() * 1000));
 
 
         //esto fue modificado porque la base de datos solo acepta long
