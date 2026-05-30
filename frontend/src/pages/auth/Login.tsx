@@ -51,7 +51,7 @@ const Login: React.FC = () => {
 
       await login("/client/login", datos_emviar);
 
-      navigate("/");
+      navigate("/client/panel");
     } catch (error: any) {
       console.log("datos no comprovados");
       console.error(error);
