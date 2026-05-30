@@ -33,8 +33,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [userRole, setUserRole] = useState<"admin" | "client" | null>(
     localStorage.getItem("userRole") as "admin" | "client" | null,
   );
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [usuarioAdmin, setUsuarioAdmin] = useState<UsuarioAdmin | null>(null);
+  const [cliente, setCliente] = useState<Cliente | null>(() => {
+    const saved = localStorage.getItem("clienteData");
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [usuarioAdmin, setUsuarioAdmin] = useState<UsuarioAdmin | null>(() => {
+    const saved = localStorage.getItem("adminData");
+    return saved ? JSON.parse(saved) : null;
+  });
 
   const login = useCallback(
     async (endpoint: string, credentials: Record<string, string>) => {
@@ -42,14 +48,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const data = response.data;
 
       localStorage.setItem("token", data.token);
-      localStorage.setItem("userRole", data.usuarioAdmin ? "admin" : "client");
+      const role = data.usuarioAdmin ? "admin" : "client";
+      localStorage.setItem("userRole", role);
       setToken(data.token);
-
+      setUserRole(role);
       if (data.usuarioAdmin) {
         setUserRole("admin");
         setUsuarioAdmin(data.usuarioAdmin);
       } else if (data.cliente) {
-        setUserRole("client");
+        localStorage.setItem("clienteData", JSON.stringify(data.cliente));
         setCliente(data.cliente);
       }
     },
@@ -70,6 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
+    localStorage.clear(); // Limpia todo
     setToken(null);
     setUserRole(null);
     setCliente(null);

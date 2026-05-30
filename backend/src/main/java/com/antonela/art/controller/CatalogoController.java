@@ -38,18 +38,18 @@ public class CatalogoController {
         return ResponseEntity.ok(servicios);
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<List<Producto>> getProductos(
-            @RequestParam(value = "disponible", required = false) Boolean disponible) {
-        logger.info("Solicitando catalogo de productos con disponible={}", disponible);
-        List<Producto> productos;
-        if (Boolean.TRUE.equals(disponible)) {
-            productos = productoRepository.findByDisponibleTrue();
-        } else {
-            productos = productoRepository.findAll();
+        @GetMapping("/products")
+        public ResponseEntity<List<Producto>> getProductos(
+                @RequestParam(value = "disponible", required = false) Boolean disponible) {
+            logger.info("Solicitando catalogo de productos con disponible={}", disponible);
+            List<Producto> productos;
+            if (Boolean.TRUE.equals(disponible)) {
+                productos = productoRepository.findByDisponibleTrue();
+            } else {
+                productos = productoRepository.findAll();
+            }
+            return ResponseEntity.ok(productos);
         }
-        return ResponseEntity.ok(productos);
-    }
 
     @GetMapping("/gallery")
     public ResponseEntity<List<ImagenGaleria>> getGallery() {
