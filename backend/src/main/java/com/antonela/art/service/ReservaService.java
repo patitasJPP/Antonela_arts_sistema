@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ReservaService {
+public class    ReservaService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservaService.class);
 

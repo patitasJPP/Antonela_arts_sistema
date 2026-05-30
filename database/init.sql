@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS reembolsos (
     id BIGSERIAL PRIMARY KEY,
     id_cita BIGINT NOT NULL,
     id_pago BIGINT NOT NULL,
-    monto_reembolsado DECIMAL(10,2) NOT NULL,
+    monto_reembolsado DECIMAL(10,2) NOT NULL,   
     porcentaje_reembolso BIGINT NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'procesado',
     id_transaccion_simulada VARCHAR(255),
