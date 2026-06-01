@@ -2,7 +2,6 @@ package com.antonela.art.controller;
 
 import com.antonela.art.entity.Cliente;
 import com.antonela.art.entity.OrdenCompra;
-import com.antonela.art.entity.Producto;
 import com.antonela.art.repository.ClienteRepository;
 import com.antonela.art.repository.OrdenCompraRepository;
 import com.antonela.art.service.CheckoutService;
@@ -20,42 +19,38 @@ public class CheckoutController {
 
     private final CheckoutService checkoutService;
     private final ClienteRepository clienteRepository;
-    private final OrdenCompraRepository ordenCompraRepository; // Declarada correctamente
+    private final OrdenCompraRepository ordenCompraRepository;
 
-    // CORRECCIÓN: El constructor debe recibir los TRES parámetros
     public CheckoutController(CheckoutService checkoutService,
                               ClienteRepository clienteRepository,
-                              OrdenCompraRepository ordenCompraRepository) { // <--- Agregado aquí
+                              OrdenCompraRepository ordenCompraRepository) {
         this.checkoutService = checkoutService;
         this.clienteRepository = clienteRepository;
-        this.ordenCompraRepository = ordenCompraRepository; // <--- Asignación agregada
+        this.ordenCompraRepository = ordenCompraRepository;
     }
 
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout(@RequestBody Map<String, Object> body) {
         try {
-            // 1. Obtener idCliente del token (SecurityContext)
-            // Spring Security ya validó el JWT y guardó el ID en el "Principal"
             Long idCliente = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-            // 2. Buscar al cliente en la BD usando el ID del token
             Cliente cliente = clienteRepository.findById(idCliente)
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-            // 3. Extraer datos del body enviado por el frontend
-            // El JSON esperado: { "productos": [...], "metodoPago": "efectivo" }
-            List<Producto> productos = (List<Producto>) body.get("productos");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> productos = (List<Map<String, Object>>) body.get("productos");
             String metodoPago = (String) body.get("metodoPago");
 
-            // 4. Llamar a tu Capa de Servicio
-            String resultado = checkoutService.procesarCheckout(cliente, productos, metodoPago);
+            OrdenCompra orden = checkoutService.procesarCheckout(cliente, productos, metodoPago);
 
-            // 5. Retornar 201 (Created) con el mensaje que armaste en el servicio
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("mensaje", resultado));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "mensaje", "Orden creada exitosamente",
+                    "ordenId", orden.getId(),
+                    "idTransaccion", orden.getIdTransaccionSimulada(),
+                    "montoTotal", orden.getMontoTotal()));
 
         } catch (Exception e) {
-            // Retornar error 400 si algo falla (carrito vacío, método pago inválido, etc)
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
