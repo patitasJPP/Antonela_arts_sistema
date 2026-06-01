@@ -122,7 +122,7 @@ const Checkout: React.FC = () => {
               className={`pay-method-btn${metodoPago === "efectivo" ? " selected-yape" : ""}`}
               onClick={() => setMetodoPago("efectivo")}
             >
-              <span className="pay-icon">💵</span>
+              <span className="pay-icon"><i className="bi bi-cash"></i></span>
               <span className="pay-label">Efectivo</span>
             </button>
             <button
@@ -130,7 +130,7 @@ const Checkout: React.FC = () => {
               className={`pay-method-btn${metodoPago === "simulado_credito" ? " selected-card" : ""}`}
               onClick={() => setMetodoPago("simulado_credito")}
             >
-              <span className="pay-icon">💳</span>
+              <span className="pay-icon"><i className="bi bi-credit-card"></i></span>
               <span className="pay-label">Tarjeta (simulado)</span>
             </button>
           </div>
@@ -146,7 +146,7 @@ const Checkout: React.FC = () => {
           )}
 
           <button type="submit" className="pay-btn-final" disabled={loading}>
-            {loading ? "Procesando..." : `🛡️ Confirmar Orden — ${fmt(total)}`}
+            {loading ? "Procesando..." : <><i className="bi bi-shield-check"></i> Confirmar Orden — {fmt(total)}</>}
           </button>
 
           <button

@@ -29,7 +29,7 @@ public class CheckoutService {
             throw new IllegalArgumentException("El carrito no puede estar vacio.");
         }
 
-        if (!"efectivo".equals(metodoPago) && !"simulado_credito".equals(metodoPago)) {
+        if (!"efectivo".equals(metodoPago) && !"simulado_credito".equals(metodoPago) && !"yape".equals(metodoPago) && !"card".equals(metodoPago)) {
             throw new IllegalArgumentException("Metodo de pago no valido.");
         }
 

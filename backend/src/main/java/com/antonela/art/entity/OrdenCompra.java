@@ -1,13 +1,17 @@
 package com.antonela.art.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ordenes_compra")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class OrdenCompra {
 
     @Id
@@ -19,6 +23,7 @@ public class OrdenCompra {
     private Cliente cliente;
 
     @Column(nullable = false, columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String productos;
 
     @Column(name = "monto_total", nullable = false, precision = 10, scale = 2)

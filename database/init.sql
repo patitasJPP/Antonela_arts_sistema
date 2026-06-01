@@ -182,6 +182,17 @@ INSERT INTO politica_cancelacion (horas_anticipacion_minimas, porcentaje_reembol
 (1, 50.00, 'Cancelacion con menos de 24 horas de anticipacion: reembolso del 50%'),
 (0, 0.00, 'Cancelacion el mismo dia: sin reembolso');
 
+-- Productos iniciales
+INSERT INTO productos (nombre, descripcion, precio, url_imagen, disponible) VALUES
+('Serum Reparador', 'Serum capilar con keratina y aceite de argán para reparación profunda', 45.00, '/img/img1.webp', true),
+('Mist Hidratante Facial', 'Bruma facial con agua de rosas y ácido hialurónico', 28.00, '/img/img1.webp', true),
+('Crema de Manos Argán', 'Crema hidratante con aceite de argán y vitamina E', 18.00, '/img/img1.webp', true),
+('Aceite Capilar', 'Aceite nutritivo para puntas abiertas con biotina', 32.00, '/img/img1.webp', true),
+('Mascarilla Facial', 'Mascarilla revitalizante con colágeno y vitamina C', 22.00, '/img/img1.webp', true),
+('Kit Cejas Perfectas', 'Kit completo para modelado de cejas con pinza y cepillo', 15.00, '/img/img1.webp', true),
+('Guía Sha', 'Herramienta de cuarzo rosa para masaje facial reafirmante', 38.00, '/img/img1.webp', true),
+('Exfoliante Corporal', 'Exfoliante natural con café y aceite de coco', 25.00, '/img/img1.webp', true);
+
 -- Usuario admin por defecto (contrasena: admin123, hasheada con BCrypt)
 INSERT INTO usuarios_admin (nombre_usuario, contrasena_hash, rol) VALUES
 ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin');
