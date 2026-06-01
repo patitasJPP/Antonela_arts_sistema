@@ -3,6 +3,7 @@ package com.antonela.art.service;
 import com.antonela.art.entity.Cliente;
 import com.antonela.art.entity.OrdenCompra;
 import com.antonela.art.repository.OrdenCompraRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ public class CheckoutService {
         this.objectMapper = objectMapper;
     }
 
-    public OrdenCompra procesarCheckout(Cliente cliente, List<Map<String, Object>> items, String metodoPago) {
+    public OrdenCompra procesarCheckout(Cliente cliente, List<Map<String, Object>> items, String metodoPago) throws JsonProcessingException {
 
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("El carrito no puede estar vacio.");
