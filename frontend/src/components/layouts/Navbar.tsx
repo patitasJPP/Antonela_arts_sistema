@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useCart } from "../../contexts/CartContext";
 
 const navItems = [
   { path: "/", label: "Inicio" },
@@ -11,6 +12,7 @@ const navItems = [
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const { items } = useCart();
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/" ? "active" : "";
@@ -35,8 +37,11 @@ const Navbar: React.FC = () => {
         ))}
       </ul>
       <div className="nav-icons">
-        <Link to="/cart">
+        <Link to="/cart" className="cart-icon-wrapper">
           <i className="bi bi-bag"></i>
+          {items.length > 0 && (
+            <span className="cart-badge">{items.length}</span>
+          )}
         </Link>
         <Link to="/login">
           <i className="bi bi-person"></i>
