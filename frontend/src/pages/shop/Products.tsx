@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import { Producto } from "../../types/_index";
+import { useCart } from "../../contexts/CartContext";
 
 const BG_CLASSES = [
   "bg-pink",
@@ -12,9 +13,10 @@ const BG_CLASSES = [
   "bg-orange",
   "bg-teal",
 ];
-export const carritoActual = [];
+
 const Products: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([]);
+  const { addToCart } = useCart();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -32,31 +34,9 @@ const Products: React.FC = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // 1. Cambiamos la función addToCart para que sea funcional
-  const addToCart = (producto: Producto) => {
+  const handleAddToCart = (producto: Producto) => {
+    addToCart(producto);
     setToastMsg(`✓ "${producto.nombre}" añadido`);
-
-    // Obtener lo que ya hay en el carrito (o un array vacío si no hay nada)
-    const carritoActual = JSON.parse(localStorage.getItem("carrito") || "[]");
-
-    console.log("Carrito antes de añadir:", carritoActual);
-
-    // Verificar si el producto ya existe para aumentar cantidad o añadir nuevo
-    const existe = carritoActual.find((item: any) => item.id === producto.id);
-
-    let nuevoCarrito;
-    if (existe) {
-      nuevoCarrito = carritoActual.map((item: any) =>
-        item.id === producto.id ? { ...item, qty: item.qty + 1 } : item,
-      );
-    } else {
-      // Inyectamos el qty: 1 que necesitabas antes
-      nuevoCarrito = [...carritoActual, { ...producto, qty: 1 }];
-    }
-
-    // Guardar en LocalStorage para que la página de 'Cart' pueda leerlo
-    localStorage.setItem("carrito", JSON.stringify(nuevoCarrito));
-    console.log("Carrito actualizado:", nuevoCarrito);
     setTimeout(() => setToastMsg(""), 2400);
   };
 
@@ -170,7 +150,7 @@ const Products: React.FC = () => {
               </div>
               <div className="card-footer">
                 <span className="price">{formatPrice(p.precio)}</span>
-                <button className="add-btn" onClick={() => addToCart(p)}>
+                <button className="add-btn" onClick={() => handleAddToCart(p)}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

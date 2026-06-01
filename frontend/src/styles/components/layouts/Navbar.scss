@@ -79,14 +79,37 @@
     align-items: center;
 
     a {
-      // Añadido el prefijo 'color.' a $muted
       color: color.$muted;
       transition: color 0.2s;
 
       &:hover {
-        // Añadido el prefijo 'color.' a $gold
         color: color.$gold;
       }
     }
+  }
+
+  .cart-icon-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: color.$gold;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: "DM Sans", sans-serif;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    line-height: 1;
   }
 }
