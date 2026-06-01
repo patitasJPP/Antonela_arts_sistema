@@ -58,20 +58,30 @@ export const PoliticaCancelacion: React.FC<PoliticaCancelacionProps> = ({
           cursor: 'pointer',
           fontSize: '12px',
           fontWeight: 500,
-          color: 'var(--text)'
+          color: aceptado ? 'var(--dark)' : 'var(--muted)',
+          transition: 'color 0.2s'
         }}>
-          <input
-            type="checkbox"
-            checked={aceptado}
-            onChange={(e) => onAceptarChange(e.target.checked)}
+          <div
+            onClick={() => onAceptarChange(!aceptado)}
             style={{
-              width: '16px',
-              height: '16px',
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
+              border: `2px solid ${aceptado ? 'var(--gold)' : 'rgba(184,150,46,0.3)'}`,
+              backgroundColor: aceptado ? 'var(--gold)' : 'transparent',
+              color: '#fff',
+              fontSize: '13px',
               cursor: 'pointer',
-              accentColor: 'var(--gold)'
+              transition: 'all 0.2s',
+              flexShrink: 0
             }}
-          />
-          <span>Acepto los términos y la política de cancelación de citas</span>
+          >
+            {aceptado && <i className="bi bi-check-lg"></i>}
+          </div>
+          <span onClick={() => onAceptarChange(!aceptado)}>Acepto los términos y la política de cancelación de citas</span>
         </label>
       )}
     </div>

@@ -381,12 +381,12 @@ const Booking: React.FC = () => {
                       {
                         name: "Adriana Velasco",
                         role: "Masterstylist",
-                        avatar: "👩‍🎨",
+                        avatar: "pro-woman",
                       },
                       {
                         name: "Julian Rossi",
                         role: "Colorexpert",
-                        avatar: "👨‍🎨",
+                        avatar: "pro-man",
                       },
                     ].map((pro, i) => (
                       <div
@@ -394,7 +394,7 @@ const Booking: React.FC = () => {
                         className={`pro-item${state.pro === pro.name ? " selected" : ""}`}
                         onClick={() => selectPro(pro.name)}
                       >
-                        <div className="pro-avatar">{pro.avatar}</div>
+                        <div className="pro-avatar"><i className={`bi ${pro.avatar === 'pro-woman' ? 'bi-person-fill' : 'bi-person-fill'}`} style={{fontSize:24}}></i></div>
                         <div className="pro-info">
                           <div className="pro-name">{pro.name}</div>
                           <div className="pro-role">{pro.role}</div>
@@ -576,7 +576,7 @@ const Booking: React.FC = () => {
         <div className="page active">
           <div className="container">
             <div className="success-wrap">
-              <div className="success-badge">✨</div>
+              <div className="success-badge"><i className="bi bi-check-circle-fill" style={{fontSize:36,color:'var(--gold)'}}></i></div>
               <div className="success-title">¡Cita Confirmada!</div>
               <div className="success-sub">
                 Tu reserva ha sido registrada exitosamente. Recibirás un

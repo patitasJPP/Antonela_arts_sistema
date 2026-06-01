@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const register = useCallback(async (data: Record<string, string>) => {
-    const response = await api.post("/api/client/register", data);
+    const response = await api.post("/client/register", data);
     const responseData = response.data;
 
     localStorage.setItem("token", responseData.token);

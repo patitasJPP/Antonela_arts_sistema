@@ -18,7 +18,7 @@ const Confirmacion: React.FC = () => {
   return (
     <div className="container" style={{ padding: "80px 24px" }}>
       <div className="success-wrap">
-        <span className="success-icon">✨</span>
+        <span className="success-icon"><i className="bi bi-check-circle-fill" style={{fontSize:48,color:'var(--gold)'}}></i></span>
 
         <div className="success-title">¡Orden Confirmada!</div>
 

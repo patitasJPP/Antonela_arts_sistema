@@ -68,7 +68,7 @@ export const ClientPanel: React.FC = () => {
       try {
         setLoadingOrdenes(true);
         setOrdenesError(null);
-        const response = await api.get<OrdenCompra[]>('/client/orders');
+        const response = await api.get<OrdenCompra[]>('/cart/client/orders');
         setOrdenes(response.data);
       } catch (err: any) {
         console.error('Error al cargar órdenes:', err);

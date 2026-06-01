@@ -179,7 +179,7 @@ export const ListaCitasCliente: React.FC = () => {
                   </span>
                   <span>
                     <i className="bi bi-clock" style={{ marginRight: '6px', color: 'var(--gold)' }}></i>
-                    {cita.horaCita}
+                    {cita.horaCita.substring(0, 5)}
                   </span>
                   <span>
                     <i className="bi bi-cash-stack" style={{ marginRight: '6px', color: 'var(--gold)' }}></i>
