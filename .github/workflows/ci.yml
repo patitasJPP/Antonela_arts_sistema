@@ -1,3 +1,4 @@
+# CI workflow - ejemplo práctico del curso de Integración Continua
 name: CI
 
 on:
