@@ -1,4 +1,6 @@
-# Antonela Art Salon 🎀
+# Antonela Art Salon
+
+> CI configurado con GitHub Actions — ver `.github/workflows/ci.yml` 🎀
 
 Sistema web integral para la gestión de un salón de belleza. Permite a los clientes reservar citas, comprar productos, y al personal administrativo gestionar el calendario, inventario y tareas.
 
