@@ -26,6 +26,13 @@ import AdminCalendar from "./pages/admin/AdminCalendar";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminTasks from "./pages/admin/AdminTasks";
 import AdminLogin from "./pages/admin/AdminLogin";
+import AdminAuthGuard from "./pages/admin/AdminAuthGuard";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminClients from "./pages/admin/AdminClients";
+import AdminGallery from "./pages/admin/AdminGallery";
+import AdminServices from "./pages/admin/AdminServices";
 
 import { MainLayout } from "./layout/MainLayout";
 
@@ -54,9 +61,24 @@ export const router = createBrowserRouter([
         path: "admin",
         children: [
           { path: "login", element: <AdminLogin /> },
-          { path: "calendar", element: <AdminCalendar /> },
-          { path: "inventory", element: <AdminInventory /> },
-          { path: "tasks", element: <AdminTasks /> },
+          {
+            element: <AdminAuthGuard />,
+            children: [
+              {
+                element: <AdminLayout />,
+                children: [
+                  { index: true, element: <AdminDashboard /> },
+                  { path: "calendar", element: <AdminCalendar /> },
+                  { path: "services", element: <AdminServices /> },
+                  { path: "inventory", element: <AdminInventory /> },
+                  { path: "gallery", element: <AdminGallery /> },
+                  { path: "orders", element: <AdminOrders /> },
+                  { path: "clients", element: <AdminClients /> },
+                  { path: "tasks", element: <AdminTasks /> },
+                ],
+              },
+            ],
+          },
         ],
       },
     ],
