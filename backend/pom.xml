@@ -75,6 +75,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Stripe -->
+        <dependency>
+            <groupId>com.stripe</groupId>
+            <artifactId>stripe-java</artifactId>
+            <version>28.4.0</version>
+        </dependency>
+
         <!-- jqwik: Property-Based Testing -->
         <dependency>
             <groupId>net.jqwik</groupId>
