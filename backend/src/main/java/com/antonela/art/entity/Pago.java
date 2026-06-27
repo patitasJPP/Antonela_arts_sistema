@@ -34,6 +34,12 @@ public class Pago {
     @Column(name = "id_transaccion_simulada", length = 100)
     private String idTransaccionSimulada;
 
+    @Column(name = "stripe_session_id", length = 255)
+    private String stripeSessionId;
+
+    @Column(name = "stripe_payment_intent_id", length = 255)
+    private String stripePaymentIntentId;
+
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 

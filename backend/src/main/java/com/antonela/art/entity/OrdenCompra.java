@@ -38,6 +38,9 @@ public class OrdenCompra {
     @Column(name = "id_transaccion_simulada", nullable = false, length = 255)
     private String idTransaccionSimulada;
 
+    @Column(name = "stripe_session_id", length = 255)
+    private String stripeSessionId;
+
     @Column(name = "creado_en", nullable = false, updatable = false)
     private LocalDateTime creadoEn;
 
