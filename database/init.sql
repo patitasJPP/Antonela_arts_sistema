@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS pagos (
     estado VARCHAR(20) DEFAULT 'completado',
     id_transaccion_simulada VARCHAR(100),
     stripe_session_id VARCHAR(255),
+    stripe_payment_intent_id VARCHAR(255),
     creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pago_cita FOREIGN KEY (id_cita) REFERENCES citas(id),
     CONSTRAINT fk_pago_cliente FOREIGN KEY (id_cliente) REFERENCES clientes(id)
