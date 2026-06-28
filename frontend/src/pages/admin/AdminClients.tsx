@@ -171,7 +171,7 @@ const AdminClients: React.FC = () => {
                         detail.citas.map((cita) => (
                           <div key={cita.id} className="admin-detail-row">
                             <span className="key">
-                              {new Date(cita.fechaHora).toLocaleDateString("es-MX", {
+                              {new Date(cita.fechaCita + "T" + cita.horaCita).toLocaleString("es-MX", {
                                 day: "numeric",
                                 month: "short",
                                 hour: "2-digit",
