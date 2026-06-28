@@ -7,40 +7,45 @@ import com.antonela.art.repository.PagoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.Instant;
+import java.util.Map;
 
 @Service
 public class ServicioPago {
 
     private final PagoRepository pagoRepository;
+    private final StripeService stripeService;
 
-    public ServicioPago(PagoRepository pagoRepository) {
+    public ServicioPago(PagoRepository pagoRepository, StripeService stripeService) {
         this.pagoRepository = pagoRepository;
+        this.stripeService = stripeService;
     }
 
     @Transactional
-    public Pago procesarPago(Cita cita, Cliente cliente, String metodoPago) {
-        if (!"efectivo".equals(metodoPago) && !"simulado_credito".equals(metodoPago)) {
-            throw new IllegalArgumentException("Metodo de pago no valido: " + metodoPago);
+    public Map<String, Object> procesarPago(Cita cita, Cliente cliente, String metodoPago) {
+        if ("efectivo".equals(metodoPago)) {
+            Pago pago = Pago.builder()
+                    .cita(cita)
+                    .cliente(cliente)
+                    .metodoPago("efectivo")
+                    .monto(cita.getMontoPagado() != null ? cita.getMontoPagado()
+                            : cita.getServicio().getPrecioMinimo())
+                    .estado("completado")
+                    .build();
+            pagoRepository.save(pago);
+            return Map.of(
+                    "idPago", pago.getId(),
+                    "estado", pago.getEstado(),
+                    "monto", pago.getMonto(),
+                    "metodoPago", "efectivo");
         }
 
-        String timestamp = String.valueOf(Instant.now().getEpochSecond());
-        String randomSuffix = String.valueOf((int) (Math.random() * 1000));
-        String idTransaccion = "SIM-" + timestamp + "-" + randomSuffix;
+        if ("stripe".equals(metodoPago)) {
+            String checkoutUrl = stripeService.crearSesionCheckout(cita, cliente);
+            return Map.of(
+                    "checkoutUrl", checkoutUrl,
+                    "estado", "pendiente");
+        }
 
-        BigDecimal monto = cita.getMontoPagado() != null ? cita.getMontoPagado()
-                : cita.getServicio().getPrecioMinimo();
-
-        Pago pago = Pago.builder()
-                .cita(cita)
-                .cliente(cliente)
-                .metodoPago(metodoPago)
-                .monto(monto)
-                .estado("completado")
-                .idTransaccionSimulada(idTransaccion)
-                .build();
-
-        return pagoRepository.save(pago);
+        throw new IllegalArgumentException("Metodo de pago no valido: " + metodoPago);
     }
 }

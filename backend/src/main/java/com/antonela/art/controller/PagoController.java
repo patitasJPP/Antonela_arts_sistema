@@ -59,15 +59,10 @@ public class PagoController {
                         .body(Map.of("error", "No tienes permiso para pagar esta cita"));
             }
 
-            Pago pago = servicioPago.procesarPago(cita, cliente, metodoPago);
-            logger.info("Pago procesado para cita {}: transaccion {}", idCita, pago.getIdTransaccionSimulada());
+            Map<String, Object> resultado = servicioPago.procesarPago(cita, cliente, metodoPago);
+            logger.info("Pago procesado para cita {}: {}", idCita, resultado);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "idPago", pago.getId(),
-                    "idTransaccion", pago.getIdTransaccionSimulada(),
-                    "monto", pago.getMonto(),
-                    "estado", pago.getEstado(),
-                    "metodoPago", pago.getMetodoPago()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
         } catch (Exception e) {
             logger.error("Error al procesar pago", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));

@@ -12,4 +12,6 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findByClienteIdOrderByCreadoEnDesc(Long idCliente);
 
     List<Pago> findByCitaId(Long idCita);
+
+    java.util.Optional<Pago> findByStripeSessionId(String stripeSessionId);
 }
