@@ -48,6 +48,19 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Twilio SDK para WhatsApp -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>9.14.1</version>
+        </dependency>
+
+        <!-- Spring Mail para notificaciones por correo -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!-- JWT: jjwt -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
