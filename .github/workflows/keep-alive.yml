@@ -1,0 +1,15 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health Check
+        run: |
+          curl -sS -o /dev/null -w "%{http_code}" "https://antonela-arts-sistema.onrender.com/api/health"
