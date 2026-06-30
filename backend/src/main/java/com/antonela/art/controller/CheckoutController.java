@@ -76,6 +76,20 @@ public class CheckoutController {
         }
     }
 
+    @PostMapping("/confirmar-pago")
+    public ResponseEntity<?> confirmarPago(@RequestBody Map<String, Object> body) {
+        try {
+            String sessionId = (String) body.get("sessionId");
+            if (sessionId == null || sessionId.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "sessionId requerido"));
+            }
+            String resultado = stripeService.confirmarOrdenPorSession(sessionId);
+            return ResponseEntity.ok(Map.of("mensaje", resultado));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/checkout")
     public ResponseEntity<?> checkout(@RequestBody Map<String, Object> body) {
         try {

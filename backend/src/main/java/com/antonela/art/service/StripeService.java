@@ -226,6 +226,25 @@ public class StripeService {
         }
     }
 
+    @Transactional
+    public String confirmarOrdenPorSession(String sessionId) {
+        try {
+            Session session = Session.retrieve(sessionId);
+            String clientReferenceId = session.getClientReferenceId();
+            String paymentIntent = session.getPaymentIntent();
+            if (clientReferenceId == null) {
+                return "Sin referencia de orden";
+            }
+            if ("paid".equals(session.getPaymentStatus())) {
+                procesarPagoExitoso(clientReferenceId, paymentIntent != null ? paymentIntent : sessionId);
+                return "Orden confirmada: " + clientReferenceId;
+            }
+            return "Pago no completado";
+        } catch (Exception e) {
+            throw new RuntimeException("Error al confirmar orden: " + e.getMessage(), e);
+        }
+    }
+
     public Event construirEventoWebhook(String payload, String sigHeader) {
         try {
             return Webhook.constructEvent(payload, sigHeader, webhookSecret);
