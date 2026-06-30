@@ -23,6 +23,10 @@ public class CheckoutService {
         this.objectMapper = objectMapper;
     }
 
+    public String serializarProductos(List<Map<String, Object>> items) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(items);
+    }
+
     public OrdenCompra procesarCheckout(Cliente cliente, List<Map<String, Object>> items, String metodoPago) throws JsonProcessingException {
 
         if (items == null || items.isEmpty()) {

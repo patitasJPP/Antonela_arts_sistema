@@ -3,50 +3,63 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import api from "../../services/api";
 
-type MetodoPago = "efectivo" | "simulado_credito";
-
 const fmt = (n: number) => `S/${n.toFixed(2).replace(".", ",")}`;
+const iconoFallback = "bi-box-seed";
+
+const iconos: Record<string, string> = {
+  "Serum": "bi-droplet",
+  "Mist": "bi-water",
+  "Aceite": "bi-droplet-half",
+  "Mascarilla": "bi-cup-straw",
+  "Vitamina": "bi-brightness-alt-high",
+  "Peine": "bi-scissors",
+  "Crema": "bi-hand-index",
+  "Gua": "bi-gem",
+};
+
+const getIcon = (nombre: string) => {
+  for (const [key, icon] of Object.entries(iconos)) {
+    if (nombre.startsWith(key)) return icon;
+  }
+  return iconoFallback;
+};
 
 const Checkout: React.FC = () => {
-  const { items, total, clearCart } = useCart();
+  const { items, total } = useCart();
   const navigate = useNavigate();
-
-  const [metodoPago, setMetodoPago] = useState<MetodoPago>("efectivo");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleStripePayment = async () => {
     if (items.length === 0) return;
 
     setLoading(true);
     setError("");
 
     try {
-      // api.ts ya agrega el JWT automáticamente en cada request
-      const response = await api.post("/cart/checkout", {
+      const response = await api.post("/cart/create-checkout-session", {
         productos: items.map((i) => ({
           id: i.producto.id,
           nombre: i.producto.nombre,
           precio: i.producto.precio,
           cantidad: i.cantidad,
         })),
-        metodoPago,
       });
 
-      const { mensaje } = response.data;
-      const ordenId = response.data.ordenId ?? Date.now();
+      const { url, ordenId } = response.data;
 
-      clearCart();
-      navigate("/shop/confirmacion", {
-        state: { ordenId, montoTotal: total, mensaje },
-      });
+      if (url) {
+        localStorage.setItem("stripe_orden_id", String(ordenId));
+        window.location.href = url;
+      } else {
+        setError("No se pudo obtener la URL de pago de Stripe.");
+      }
     } catch (err: any) {
       const msg =
+        err.response?.data?.error ||
         err.response?.data?.mensaje ||
-        err.response?.data ||
-        "Error al procesar la orden. Intenta nuevamente.";
-      setError(typeof msg === "string" ? msg : "Error al procesar la orden.");
+        "Error al conectar con Stripe. ¿Iniciaste sesión?";
+      setError(typeof msg === "string" ? msg : "Error al procesar el pago.");
     } finally {
       setLoading(false);
     }
@@ -56,11 +69,7 @@ const Checkout: React.FC = () => {
     return (
       <div className="container" style={{ textAlign: "center", padding: "80px 24px" }}>
         <p>No tienes productos en el carrito.</p>
-        <button
-          className="checkout-btn"
-          onClick={() => navigate("/products")}
-          style={{ marginTop: 16 }}
-        >
+        <button className="checkout-btn" onClick={() => navigate("/products")} style={{ marginTop: 16 }}>
           Ver Productos
         </button>
       </div>
@@ -81,12 +90,9 @@ const Checkout: React.FC = () => {
           </div>
           {items.map(({ producto, cantidad }) => (
             <div className="order-item" key={producto.id}>
-              <img
-                src={producto.urlImagen || "/img/img1.webp"}
-                alt={producto.nombre}
-                className="order-img"
-                style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8 }}
-              />
+              <div className="order-img">
+                <i className={`bi ${getIcon(producto.nombre)}`} style={{ fontSize: 24 }}></i>
+              </div>
               <div className="order-item-info">
                 <div className="order-item-name">{producto.nombre}</div>
                 <div className="order-item-qty">Cantidad: {cantidad}</div>
@@ -113,26 +119,15 @@ const Checkout: React.FC = () => {
           </div>
         </div>
 
-        <form className="card-payment-box" onSubmit={handleSubmit}>
-          <div className="card-pay-title">Método de pago</div>
-
-          <div className="payment-methods" style={{ marginBottom: 24 }}>
-            <button
-              type="button"
-              className={`pay-method-btn${metodoPago === "efectivo" ? " selected-yape" : ""}`}
-              onClick={() => setMetodoPago("efectivo")}
-            >
-              <span className="pay-icon"><i className="bi bi-cash"></i></span>
-              <span className="pay-label">Efectivo</span>
-            </button>
-            <button
-              type="button"
-              className={`pay-method-btn${metodoPago === "simulado_credito" ? " selected-card" : ""}`}
-              onClick={() => setMetodoPago("simulado_credito")}
-            >
-              <span className="pay-icon"><i className="bi bi-credit-card"></i></span>
-              <span className="pay-label">Tarjeta (simulado)</span>
-            </button>
+        <div className="card-payment-box">
+          <div className="card-pay-title">Pagar con Stripe</div>
+          <div className="card-pay-sub">
+            Tu pago es procesado de forma segura por Stripe
+          </div>
+          <div className="card-logos">
+            <div className="card-logo">VISA</div>
+            <div className="card-logo">MC</div>
+            <div className="card-logo">AMEX</div>
           </div>
 
           {error && (
@@ -141,23 +136,40 @@ const Checkout: React.FC = () => {
               padding: "12px 16px", borderRadius: 8,
               marginBottom: 16, fontSize: 14,
             }}>
+              <i className="bi bi-exclamation-triangle" style={{ marginRight: 6 }}></i>
               {error}
             </div>
           )}
 
-          <button type="submit" className="pay-btn-final" disabled={loading}>
-            {loading ? "Procesando..." : <><i className="bi bi-shield-check"></i> Confirmar Orden — {fmt(total)}</>}
+          <button
+            type="button"
+            className="pay-btn-final"
+            onClick={handleStripePayment}
+            disabled={loading}
+          >
+            {loading ? (
+              <>Procesando...</>
+            ) : (
+              <>
+                <i className="bi bi-credit-card"></i>
+                Pagar {fmt(total)} con Stripe
+              </>
+            )}
           </button>
+
+          <div className="terms-note" style={{ marginTop: 16 }}>
+            Al pagar serás redirigido a Stripe para completar la transacción de forma segura.
+          </div>
 
           <button
             type="button"
             className="back-link"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/cart")}
             style={{ marginTop: 12 }}
           >
-            ← Volver
+            ← Volver al Carrito
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

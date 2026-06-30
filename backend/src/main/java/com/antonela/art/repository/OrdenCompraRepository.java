@@ -10,4 +10,6 @@ import java.util.List;
 public interface OrdenCompraRepository extends JpaRepository<OrdenCompra, Long> {
 
     List<OrdenCompra> findByClienteIdOrderByCreadoEnDesc(Long idCliente);
+
+    List<OrdenCompra> findAllByOrderByCreadoEnDesc();
 }
