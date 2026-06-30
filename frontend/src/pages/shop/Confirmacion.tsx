@@ -31,6 +31,13 @@ const Confirmacion: React.FC = () => {
           .catch((err) => console.error("Error al confirmar pago:", err));
       }
 
+      if (t !== "cita" && sessionId && !pagoConfirmado) {
+        setPagoConfirmado(true);
+        api.post("/cart/confirmar-pago", { sessionId })
+          .then(() => console.log("Orden confirmada en BD"))
+          .catch((err) => console.error("Error al confirmar orden:", err));
+      }
+
       if (t !== "cita") {
         localStorage.removeItem("stripe_orden_id");
         localStorage.removeItem("cart_items");
