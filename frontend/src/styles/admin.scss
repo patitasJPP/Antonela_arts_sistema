@@ -920,6 +920,22 @@
   line-height: 1.4;
 }
 
+.notification-message--unread {
+  font-weight: 600;
+}
+
+.notification-item--unread {
+  background: rgba(184, 150, 46, 0.06);
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 12px 8px;
+  margin: 0 -8px;
+}
+
+.notification-item--unread:hover {
+  background: rgba(184, 150, 46, 0.12);
+}
+
 .notification-time {
   font-size: 11px;
   color: var(--muted);
