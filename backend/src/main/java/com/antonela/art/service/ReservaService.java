@@ -27,16 +27,13 @@ public class ReservaService {
     private final CitaRepository citaRepository;
     private final ClienteRepository clienteRepository;
     private final ServicioRepository servicioRepository;
-    private final NotificacionService notificacionService;
 
     public ReservaService(CitaRepository citaRepository,
                           ClienteRepository clienteRepository,
-                          ServicioRepository servicioRepository,
-                          NotificacionService notificacionService) {
+                          ServicioRepository servicioRepository) {
         this.citaRepository = citaRepository;
         this.clienteRepository = clienteRepository;
         this.servicioRepository = servicioRepository;
-        this.notificacionService = notificacionService;
     }
 
     public List<FranjaHorariaDTO> obtenerFranjasDisponibles(LocalDate fecha, Long idServicio) {
@@ -113,12 +110,6 @@ public class ReservaService {
 
         Cita guardada = citaRepository.save(cita);
         logger.info("Cita creada exitosamente con ID: {}", guardada.getId());
-
-        try {
-            notificacionService.enviarConfirmacionCita(guardada);
-        } catch (Exception e) {
-            logger.error("Error enviando notificacion id={}: {}", guardada.getId(), e.getMessage(), e);
-        }
 
         return guardada;
     }

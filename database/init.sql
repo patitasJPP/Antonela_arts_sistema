@@ -187,14 +187,14 @@ INSERT INTO politica_cancelacion (horas_anticipacion_minimas, porcentaje_reembol
 
 -- Productos iniciales
 INSERT INTO productos (nombre, descripcion, precio, url_imagen, disponible) VALUES
-('Serum Reparador', 'Serum capilar con keratina y aceite de argán para reparación profunda', 45.00, '/img/img1.webp', true),
-('Mist Hidratante Facial', 'Bruma facial con agua de rosas y ácido hialurónico', 28.00, '/img/img1.webp', true),
-('Crema de Manos Argán', 'Crema hidratante con aceite de argán y vitamina E', 18.00, '/img/img1.webp', true),
-('Aceite Capilar', 'Aceite nutritivo para puntas abiertas con biotina', 32.00, '/img/img1.webp', true),
-('Mascarilla Facial', 'Mascarilla revitalizante con colágeno y vitamina C', 22.00, '/img/img1.webp', true),
-('Kit Cejas Perfectas', 'Kit completo para modelado de cejas con pinza y cepillo', 15.00, '/img/img1.webp', true),
-('Guía Sha', 'Herramienta de cuarzo rosa para masaje facial reafirmante', 38.00, '/img/img1.webp', true),
-('Exfoliante Corporal', 'Exfoliante natural con café y aceite de coco', 25.00, '/img/img1.webp', true);
+('Serum Reparador', 'Serum capilar con keratina y aceite de argán para reparación profunda', 45.00, 'https://images.unsplash.com/photo-1768254636839-9a2d2619c861?w=400', true),
+('Mist Hidratante Facial', 'Bruma facial con agua de rosas y ácido hialurónico', 28.00, 'https://images.unsplash.com/photo-1706067501076-b747fe8978aa?w=400', true),
+('Crema de Manos Argán', 'Crema hidratante con aceite de argán y vitamina E', 18.00, 'https://images.unsplash.com/photo-1615900119312-2acd3a71f3aa?w=400', true),
+('Aceite Capilar', 'Aceite nutritivo para puntas abiertas con biotina', 32.00, 'https://images.unsplash.com/photo-1695048401313-d7153c37d6ac?w=400', true),
+('Mascarilla Facial', 'Mascarilla revitalizante con colágeno y vitamina C', 22.00, 'https://images.unsplash.com/photo-1743928217924-77ec5f39c4fb?w=400', true),
+('Kit Cejas Perfectas', 'Kit completo para modelado de cejas con pinza y cepillo', 15.00, 'https://images.unsplash.com/photo-1512206879471-b4d119aef899?w=400', true),
+('Guía Sha', 'Herramienta de cuarzo rosa para masaje facial reafirmante', 38.00, 'https://images.unsplash.com/photo-1665378764540-8aca31360df9?w=400', true),
+('Exfoliante Corporal', 'Exfoliante natural con café y aceite de coco', 25.00, 'https://images.unsplash.com/photo-1564594218151-a67498fb2922?w=400', true);
 
 -- Usuario admin por defecto (contrasena: admin123, hasheada con BCrypt)
 INSERT INTO usuarios_admin (nombre_usuario, contrasena_hash, rol) VALUES

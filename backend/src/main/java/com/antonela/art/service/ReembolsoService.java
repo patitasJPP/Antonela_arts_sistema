@@ -22,19 +22,30 @@ public class ReembolsoService {
 
     private final ReembolsoRepository reembolsoRepository;
     private final NotificacionAdminRepository notificacionAdminRepository;
+    private final StripeService stripeService;
 
     public ReembolsoService(ReembolsoRepository reembolsoRepository,
-                            NotificacionAdminRepository notificacionAdminRepository) {
+                            NotificacionAdminRepository notificacionAdminRepository,
+                            StripeService stripeService) {
         this.reembolsoRepository = reembolsoRepository;
         this.notificacionAdminRepository = notificacionAdminRepository;
+        this.stripeService = stripeService;
     }
 
     @Transactional
     public Reembolso procesarReembolso(Pago pago, BigDecimal monto, int porcentaje) {
         try {
-            String timestamp = String.valueOf(Instant.now().getEpochSecond());
-            String randomSuffix = UUID.randomUUID().toString().substring(0, 8);
-            String idTransaccion = "SIM-REF-" + timestamp + "-" + randomSuffix;
+            String refId;
+            boolean esStripe = "stripe".equals(pago.getMetodoPago());
+
+            if (esStripe) {
+                String stripeRefundId = stripeService.procesarReembolsoStripe(pago, monto);
+                refId = stripeRefundId;
+            } else {
+                String timestamp = String.valueOf(Instant.now().getEpochSecond());
+                String randomSuffix = UUID.randomUUID().toString().substring(0, 8);
+                refId = "SIM-REF-" + timestamp + "-" + randomSuffix;
+            }
 
             Reembolso reembolso = Reembolso.builder()
                     .cita(pago.getCita())
@@ -42,12 +53,12 @@ public class ReembolsoService {
                     .montoReembolsado(monto)
                     .porcentajeReembolso(porcentaje)
                     .estado("procesado")
-                    .idTransaccionSimulada(idTransaccion)
+                    .idTransaccionSimulada(refId)
                     .procesadoEn(LocalDateTime.now())
                     .build();
 
             Reembolso guardado = reembolsoRepository.save(reembolso);
-            logger.info("Reembolso procesado: {} para pago {}", idTransaccion, pago.getId());
+            logger.info("Reembolso procesado: {} para pago {}", refId, pago.getId());
             return guardado;
         } catch (Exception e) {
             logger.error("Error al procesar reembolso para pago {}", pago.getId(), e);

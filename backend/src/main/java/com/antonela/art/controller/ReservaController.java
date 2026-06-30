@@ -3,7 +3,10 @@ package com.antonela.art.controller;
 import com.antonela.art.dto.CrearCitaRequest;
 import com.antonela.art.dto.FranjaHorariaDTO;
 import com.antonela.art.entity.Cita;
+import com.antonela.art.entity.Cliente;
+import com.antonela.art.repository.ClienteRepository;
 import com.antonela.art.service.ReservaService;
+import com.antonela.art.service.ServicioPago;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,9 +28,15 @@ public class ReservaController {
     private static final Logger logger = LoggerFactory.getLogger(ReservaController.class);
 
     private final ReservaService reservaService;
+    private final ClienteRepository clienteRepository;
+    private final ServicioPago servicioPago;
 
-    public ReservaController(ReservaService reservaService) {
+    public ReservaController(ReservaService reservaService,
+                             ClienteRepository clienteRepository,
+                             ServicioPago servicioPago) {
         this.reservaService = reservaService;
+        this.clienteRepository = clienteRepository;
+        this.servicioPago = servicioPago;
     }
 
     @GetMapping("/available-slots")
@@ -61,7 +71,18 @@ public class ReservaController {
         try {
             Long idCliente = (Long) authentication.getPrincipal();
             Cita cita = reservaService.crearCita(idCliente, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(cita);
+
+            Cliente cliente = clienteRepository.findById(idCliente)
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+            Map<String, Object> pagoResult = servicioPago.procesarPago(cita, cliente, "stripe");
+            String stripeUrl = (String) pagoResult.get("checkoutUrl");
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("cita", cita);
+            response.put("stripeUrl", stripeUrl);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             logger.warn("Error al crear cita: {}", e.getMessage());
             if (e.getMessage().contains("no está disponible") || e.getMessage().contains("ya está ocupada")) {

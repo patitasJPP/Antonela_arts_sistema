@@ -212,8 +212,14 @@ const Booking: React.FC = () => {
         montoPagado: state.servicePrice,
       });
 
-      setSuccessCita(response.data);
-      setPage("success");
+      const { cita, stripeUrl } = response.data;
+
+      if (stripeUrl) {
+        window.location.href = stripeUrl;
+      } else {
+        setSuccessCita(cita);
+        setPage("success");
+      }
     } catch (err: any) {
       console.error("Error al crear cita:", err);
       setErrorMsg(

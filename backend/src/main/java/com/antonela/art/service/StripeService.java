@@ -9,9 +9,12 @@ import com.antonela.art.repository.OrdenCompraRepository;
 import com.antonela.art.repository.PagoRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import com.stripe.param.RefundCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -123,6 +126,7 @@ public class StripeService {
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(frontendUrl + "/shop/confirmacion?status=success&type=cita&citaId=" + cita.getId() + "&session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl(frontendUrl + "/shop/confirmacion?status=canceled&type=cita")
+                .setClientReferenceId("cita_" + cita.getId())
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
@@ -136,8 +140,6 @@ public class StripeService {
                                                                 .build())
                                                 .build())
                                 .build())
-                .putMetadata("id_cita", cita.getId().toString())
-                .putMetadata("id_cliente", cliente.getId().toString())
                 .build();
 
         try {
@@ -182,6 +184,9 @@ public class StripeService {
         if (clientReferenceId.startsWith("cita_")) {
             Long citaId = Long.parseLong(clientReferenceId.replace("cita_", ""));
             citaRepository.findById(citaId).ifPresent(cita -> {
+                cita.setEstado("confirmada");
+                citaRepository.save(cita);
+
                 List<Pago> pagos = pagoRepository.findByCitaId(citaId);
                 Pago pago;
                 if (pagos.isEmpty()) {
@@ -201,12 +206,12 @@ public class StripeService {
                 }
                 pago.setIdTransaccionSimulada(paymentIntentId);
                 pagoRepository.save(pago);
-                logger.info("Pago Stripe registrado para cita {}: paymentIntent={}", citaId, paymentIntentId);
+                logger.info("Pago Stripe confirmado para cita {}: paymentIntent={}", citaId, paymentIntentId);
 
                 try {
-                    notificacionService.enviarPagoCita(cita);
+                    notificacionService.enviarConfirmacionCita(cita);
                 } catch (Exception e) {
-                    logger.error("Error al enviar notificacion de pago de cita {}: {}", citaId, e.getMessage());
+                    logger.error("Error al enviar notificacion de confirmacion {}: {}", citaId, e.getMessage());
                 }
             });
         } else {
@@ -242,6 +247,35 @@ public class StripeService {
             return "Pago no completado";
         } catch (Exception e) {
             throw new RuntimeException("Error al confirmar orden: " + e.getMessage(), e);
+        }
+    }
+
+    public String procesarReembolsoStripe(Pago pago, BigDecimal monto) {
+        if (!stripeInicializado) {
+            throw new RuntimeException("Stripe no esta configurado");
+        }
+        String paymentIntent = pago.getStripePaymentIntentId();
+        if (paymentIntent == null || paymentIntent.isBlank()) {
+            paymentIntent = pago.getIdTransaccionSimulada();
+        }
+        if (paymentIntent == null || paymentIntent.isBlank()) {
+            throw new RuntimeException("Pago no tiene referencia de Stripe para reembolsar");
+        }
+
+        try {
+            long centavos = monto.multiply(BigDecimal.valueOf(100)).longValue();
+
+            RefundCreateParams params = RefundCreateParams.builder()
+                    .setPaymentIntent(paymentIntent)
+                    .setAmount(centavos)
+                    .build();
+
+            Refund refund = Refund.create(params);
+            logger.info("Reembolso Stripe creado: {} para paymentIntent={}, monto={}", refund.getId(), paymentIntent, monto);
+            return refund.getId();
+        } catch (StripeException e) {
+            logger.error("Error al reembolsar en Stripe: {}", e.getMessage());
+            throw new RuntimeException("Error al procesar reembolso en Stripe: " + e.getMessage(), e);
         }
     }
 
