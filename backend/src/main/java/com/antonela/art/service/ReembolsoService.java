@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -66,13 +67,29 @@ public class ReembolsoService {
             logger.info("Reembolso procesado: {} para pago {}", refId, pago.getId());
 
             Cita cita = pago.getCita();
+            String nombreCliente = cita.getCliente().getNombreCompleto();
+            String telefono = cita.getCliente().getTelefono();
+            String email = cita.getCliente().getCorreoElectronico();
+            String servicioNombre = cita.getServicio().getNombre();
+            DateTimeFormatter fmtFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter fmtHora = DateTimeFormatter.ofPattern("HH:mm");
+            String fechaStr = cita.getFechaCita().format(fmtFecha);
+            String horaStr = cita.getHoraCita().format(fmtHora);
+
+            String mensaje = String.format(
+                    "✅ Cancelación confirmada con reembolso\n\n" +
+                    "Hola %s, tu cita para %s del %s a las %s fue cancelada.\n\n" +
+                    "💰 Reembolso: S/%s (%s%% del monto)\n" +
+                    "📝 Motivo: Cancelación procesada\n\n" +
+                    "El reembolso se procesará en los próximos días. 💛",
+                    nombreCliente, servicioNombre, fechaStr, horaStr,
+                    monto, porcentaje);
+
+            String finalMensaje = mensaje;
             CompletableFuture.runAsync(() -> {
                 try {
-                    notificacionService.enviarCancelacionConReembolso(
-                            cita,
-                            "Cancelación procesada",
-                            monto,
-                            BigDecimal.valueOf(porcentaje));
+                    notificacionService.enviarMensajeDirecto(
+                            telefono, email, "Cancelación con reembolso", finalMensaje);
                     logger.info("Notificacion de reembolso enviada para cita {}", cita.getId());
                 } catch (Exception e) {
                     logger.error("Error al enviar notificacion de reembolso: {}", e.getMessage());

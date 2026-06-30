@@ -102,6 +102,11 @@ public class NotificacionService {
                 "Nuevo pedido #" + orden.getId() + " para " + orden.getCliente().getNombreCompleto());
     }
 
+    public void enviarMensajeDirecto(String telefono, String email, String asunto, String mensaje) {
+        enviarWhatsApp(telefono, mensaje);
+        enviarEmail(email, asunto, mensaje);
+    }
+
     public void enviarPagoCita(Cita cita) {
         String mensaje = generarMensajePagoCita(cita);
         enviarWhatsApp(cita.getCliente().getTelefono(), mensaje);
