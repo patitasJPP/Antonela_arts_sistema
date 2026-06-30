@@ -37,6 +37,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
+      - name: Regenerar package-lock.json (platforma CI)
+        run: npm install --package-lock-only --no-audit --no-fund --ignore-scripts
       - name: Instalar dependencias
         run: npm ci
       - name: Ejecutar tests
