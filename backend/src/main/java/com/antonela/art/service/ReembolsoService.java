@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ReembolsoService {
@@ -65,16 +66,18 @@ public class ReembolsoService {
             logger.info("Reembolso procesado: {} para pago {}", refId, pago.getId());
 
             Cita cita = pago.getCita();
-            try {
-                notificacionService.enviarCancelacionConReembolso(
-                        cita,
-                        "Cancelación procesada",
-                        monto,
-                        BigDecimal.valueOf(porcentaje));
-                logger.info("Notificacion de cancelacion con reembolso enviada para cita {}", cita.getId());
-            } catch (Exception e) {
-                logger.error("Error al enviar notificacion de reembolso para cita {}: {}", cita.getId(), e.getMessage());
-            }
+            CompletableFuture.runAsync(() -> {
+                try {
+                    notificacionService.enviarCancelacionConReembolso(
+                            cita,
+                            "Cancelación procesada",
+                            monto,
+                            BigDecimal.valueOf(porcentaje));
+                    logger.info("Notificacion de reembolso enviada para cita {}", cita.getId());
+                } catch (Exception e) {
+                    logger.error("Error al enviar notificacion de reembolso: {}", e.getMessage());
+                }
+            });
 
             return guardado;
         } catch (Exception e) {
