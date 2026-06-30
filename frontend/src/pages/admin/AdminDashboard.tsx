@@ -21,12 +21,18 @@ const quickLinks = [
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("es-MX", {
+  return d.toLocaleDateString("es-PE", {
     day: "numeric",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+const iconoTipo = (tipo: string) => {
+  if (tipo.startsWith("pedido")) return "bi-receipt";
+  if (tipo.startsWith("cita")) return "bi-calendar-event";
+  return "bi-bell";
 };
 
 const AdminDashboard: React.FC = () => {
@@ -52,6 +58,14 @@ const AdminDashboard: React.FC = () => {
     };
     fetchData();
   }, []);
+
+  const marcarLeida = (id: number) => {
+    api.post(`/admin/dashboard/notifications/${id}/read`).then(() => {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
+      );
+    });
+  };
 
   if (loading) {
     return (
@@ -160,17 +174,18 @@ const AdminDashboard: React.FC = () => {
                 </div>
               ) : (
                 notifications.map((n) => (
-                  <div key={n.id} className="notification-item">
-                    <div className={`notification-icon ${n.tipo}`}>
-                      <i className={`bi ${
-                        n.tipo === "error" ? "bi-x-circle" :
-                        n.tipo === "warning" ? "bi-exclamation-circle" :
-                        n.tipo === "info" ? "bi-info-circle" :
-                        "bi-check-circle"
-                      }`} />
+                  <div
+                    key={n.id}
+                    className={`notification-item${n.leida ? "" : " notification-item--unread"}`}
+                    onClick={() => !n.leida && marcarLeida(n.id)}
+                  >
+                    <div className="notification-icon">
+                      <i className={`bi ${iconoTipo(n.tipo)}`} />
                     </div>
                     <div className="notification-content">
-                      <p className="notification-message">{n.mensaje}</p>
+                      <p className={`notification-message${n.leida ? "" : " notification-message--unread"}`}>
+                        {n.mensaje}
+                      </p>
                       <span className="notification-time">{formatDate(n.creadoEn)}</span>
                     </div>
                   </div>
