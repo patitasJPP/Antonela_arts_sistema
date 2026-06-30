@@ -196,7 +196,7 @@ const AdminClients: React.FC = () => {
                         detail.ordenes.map((orden) => (
                           <div key={orden.id} className="admin-detail-row">
                             <span className="key">
-                              #{orden.id} — ${Number(orden.montoTotal).toFixed(2)}
+                              #{orden.id} — S/{Number(orden.montoTotal).toFixed(2)}
                             </span>
                             <span className={`status-badge ${orden.estado}`}>
                               {orden.estado}

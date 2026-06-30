@@ -1,5 +1,6 @@
 package com.antonela.art.service;
 
+import com.antonela.art.entity.Cita;
 import com.antonela.art.entity.NotificacionAdmin;
 import com.antonela.art.entity.Pago;
 import com.antonela.art.entity.Reembolso;
@@ -23,13 +24,16 @@ public class ReembolsoService {
     private final ReembolsoRepository reembolsoRepository;
     private final NotificacionAdminRepository notificacionAdminRepository;
     private final StripeService stripeService;
+    private final NotificacionService notificacionService;
 
     public ReembolsoService(ReembolsoRepository reembolsoRepository,
                             NotificacionAdminRepository notificacionAdminRepository,
-                            StripeService stripeService) {
+                            StripeService stripeService,
+                            NotificacionService notificacionService) {
         this.reembolsoRepository = reembolsoRepository;
         this.notificacionAdminRepository = notificacionAdminRepository;
         this.stripeService = stripeService;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional
@@ -59,6 +63,19 @@ public class ReembolsoService {
 
             Reembolso guardado = reembolsoRepository.save(reembolso);
             logger.info("Reembolso procesado: {} para pago {}", refId, pago.getId());
+
+            Cita cita = pago.getCita();
+            try {
+                notificacionService.enviarCancelacionConReembolso(
+                        cita,
+                        "Cancelación procesada",
+                        monto,
+                        BigDecimal.valueOf(porcentaje));
+                logger.info("Notificacion de cancelacion con reembolso enviada para cita {}", cita.getId());
+            } catch (Exception e) {
+                logger.error("Error al enviar notificacion de reembolso para cita {}: {}", cita.getId(), e.getMessage());
+            }
+
             return guardado;
         } catch (Exception e) {
             logger.error("Error al procesar reembolso para pago {}", pago.getId(), e);

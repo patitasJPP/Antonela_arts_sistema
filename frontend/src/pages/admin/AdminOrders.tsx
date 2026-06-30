@@ -139,7 +139,7 @@ const AdminOrders: React.FC = () => {
                           <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {productosText}
                           </td>
-                          <td>${Number(order.montoTotal).toFixed(2)}</td>
+                          <td>S/{Number(order.montoTotal).toFixed(2)}</td>
                           <td>{order.metodoPago || "-"}</td>
                           <td>
                             <span className={`status-badge ${order.estado}`}>

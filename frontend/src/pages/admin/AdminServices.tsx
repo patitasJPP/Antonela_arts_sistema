@@ -180,10 +180,10 @@ const AdminServices: React.FC = () => {
                         <td style={{ maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {s.descripcion || "-"}
                         </td>
-                        <td>${Number(s.precioMinimo).toFixed(2)}</td>
+                        <td>S/{Number(s.precioMinimo).toFixed(2)}</td>
                         <td>
                           {s.precioMaximo != null
-                            ? `$${Number(s.precioMaximo).toFixed(2)}`
+                            ? `S/${Number(s.precioMaximo).toFixed(2)}`
                             : "-"}
                         </td>
                         <td>
@@ -252,7 +252,7 @@ const AdminServices: React.FC = () => {
                   </div>
                   <div className="admin-form-row-2">
                     <div className="admin-form-group">
-                      <label>Precio mínimo ($)</label>
+                      <label>Precio mínimo (S/)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -269,7 +269,7 @@ const AdminServices: React.FC = () => {
                       />
                     </div>
                     <div className="admin-form-group">
-                      <label>Precio máximo ($)</label>
+                      <label>Precio máximo (S/)</label>
                       <input
                         type="number"
                         step="0.01"
