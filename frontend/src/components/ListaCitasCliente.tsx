@@ -41,7 +41,7 @@ export const ListaCitasCliente: React.FC = () => {
       
       if (activeTab === 'activas') {
         // Citas pendientes que no hayan pasado o simplemente estado 'pendiente'
-        return state === 'pendiente';
+        return state === 'pendiente' || state === 'confirmada';
       } else if (activeTab === 'historial') {
         // Citas completadas
         return state === 'completada';
@@ -59,6 +59,8 @@ export const ListaCitasCliente: React.FC = () => {
     const state = estado.toLowerCase();
     if (state === 'pendiente') {
       return { backgroundColor: 'rgba(184, 150, 46, 0.15)', color: 'var(--gold-dark)' };
+    } else if (state === 'confirmada') {
+      return { backgroundColor: 'rgba(52, 152, 219, 0.15)', color: '#2980b9' };
     } else if (state === 'completada') {
       return { backgroundColor: 'rgba(46, 184, 92, 0.15)', color: '#1e7b34' };
     } else {
@@ -69,6 +71,7 @@ export const ListaCitasCliente: React.FC = () => {
   const getStatusText = (estado: string) => {
     const state = estado.toLowerCase();
     if (state === 'pendiente') return 'Pendiente';
+    if (state === 'confirmada') return 'Confirmada';
     if (state === 'completada') return 'Completada';
     if (state === 'cancelada') return 'Cancelada';
     return estado;

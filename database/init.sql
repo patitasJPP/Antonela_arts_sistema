@@ -196,7 +196,8 @@ INSERT INTO productos (nombre, descripcion, precio, url_imagen, disponible) VALU
 ('Guía Sha', 'Herramienta de cuarzo rosa para masaje facial reafirmante', 38.00, 'https://images.unsplash.com/photo-1665378764540-8aca31360df9?w=400', true),
 ('Exfoliante Corporal', 'Exfoliante natural con café y aceite de coco', 25.00, 'https://images.unsplash.com/photo-1564594218151-a67498fb2922?w=400', true);
 
--- Usuario admin por defecto (contrasena: admin123, hasheada con BCrypt)
+-- Usuarios admin por defecto (contrasena: admin123, hasheada con BCrypt)
 INSERT INTO usuarios_admin (nombre_usuario, contrasena_hash, rol) VALUES
-('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin');
+('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin'),
+('admin2', '$2b$10$GyloJ.yx7BUWc4bzCz7Mlu9Hj7Pl44d34syAIhN/aR6M9rHhrQCau', 'admin');
     

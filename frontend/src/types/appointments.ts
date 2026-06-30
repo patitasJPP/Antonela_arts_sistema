@@ -8,7 +8,7 @@ export interface Cita {
   servicio: Servicio;
   fechaCita: string;
   horaCita: string;
-  estado: "pendiente" | "completada" | "cancelada";
+  estado: "pendiente" | "confirmada" | "completada" | "cancelada";
   montoPagado?: number;
   creadoEn?: string;
   actualizadoEn?: string;
