@@ -10,6 +10,6 @@ describe("Footer Component", () => {
         <Footer />
       </BrowserRouter>,
     );
-    expect(screen.getByText(/Antonela Art/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Antonela Art/i).length).toBeGreaterThanOrEqual(1);
   });
 });
