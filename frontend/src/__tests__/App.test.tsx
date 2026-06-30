@@ -3,6 +3,18 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 expect.extend(matchers);
 
 import { render, screen } from '@testing-library/react';
+
+jest.mock('../services/api', () => ({
+  __esModule: true,
+  default: {
+    get: jest.fn().mockResolvedValue({ data: [] }),
+    post: jest.fn().mockResolvedValue({ data: {} }),
+    put: jest.fn().mockResolvedValue({ data: {} }),
+    delete: jest.fn().mockResolvedValue({ data: {} }),
+    interceptors: { request: { use: jest.fn() }, response: { use: jest.fn() } },
+  },
+}));
+
 import App from '../App';
 
 describe('App component', () => {
