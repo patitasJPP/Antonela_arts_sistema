@@ -183,51 +183,65 @@ public class StripeService {
 
         if (clientReferenceId.startsWith("cita_")) {
             Long citaId = Long.parseLong(clientReferenceId.replace("cita_", ""));
-            citaRepository.findById(citaId).ifPresent(cita -> {
-                cita.setEstado("confirmada");
-                citaRepository.save(cita);
+            var optCita = citaRepository.findById(citaId);
+            if (optCita.isEmpty()) return;
+            Cita cita = optCita.get();
 
-                List<Pago> pagos = pagoRepository.findByCitaId(citaId);
-                Pago pago;
-                if (pagos.isEmpty()) {
-                    pago = Pago.builder()
-                            .cita(cita)
-                            .cliente(cita.getCliente())
-                            .metodoPago("stripe")
-                            .monto(cita.getMontoPagado() != null ? cita.getMontoPagado()
-                                    : cita.getServicio().getPrecioMinimo())
-                            .estado("completado")
-                            .stripeSessionId(null)
-                            .idTransaccionSimulada(paymentIntentId)
-                            .build();
-                } else {
-                    pago = pagos.get(0);
-                    pago.setEstado("completado");
-                }
-                pago.setIdTransaccionSimulada(paymentIntentId);
-                pagoRepository.save(pago);
-                logger.info("Pago Stripe confirmado para cita {}: paymentIntent={}", citaId, paymentIntentId);
+            if ("confirmada".equals(cita.getEstado())) {
+                logger.info("Cita {} ya estaba confirmada, omitiendo", citaId);
+                return;
+            }
 
-                try {
-                    notificacionService.enviarConfirmacionCita(cita);
-                } catch (Exception e) {
-                    logger.error("Error al enviar notificacion de confirmacion {}: {}", citaId, e.getMessage());
-                }
-            });
+            cita.setEstado("confirmada");
+            citaRepository.save(cita);
+
+            List<Pago> pagos = pagoRepository.findByCitaId(citaId);
+            Pago pago;
+            if (pagos.isEmpty()) {
+                pago = Pago.builder()
+                        .cita(cita)
+                        .cliente(cita.getCliente())
+                        .metodoPago("stripe")
+                        .monto(cita.getMontoPagado() != null ? cita.getMontoPagado()
+                                : cita.getServicio().getPrecioMinimo())
+                        .estado("completado")
+                        .stripeSessionId(null)
+                        .idTransaccionSimulada(paymentIntentId)
+                        .build();
+            } else {
+                pago = pagos.get(0);
+                pago.setEstado("completado");
+            }
+            pago.setIdTransaccionSimulada(paymentIntentId);
+            pagoRepository.save(pago);
+            logger.info("Pago Stripe confirmado para cita {}: paymentIntent={}", citaId, paymentIntentId);
+
+            try {
+                notificacionService.enviarConfirmacionCita(cita);
+            } catch (Exception e) {
+                logger.error("Error al enviar notificacion de confirmacion {}: {}", citaId, e.getMessage());
+            }
         } else {
             Long ordenId = Long.parseLong(clientReferenceId);
-            ordenRepository.findById(ordenId).ifPresent(orden -> {
-                orden.setEstado("completada");
-                orden.setIdTransaccionSimulada(paymentIntentId);
-                ordenRepository.save(orden);
-                logger.info("Pago Stripe registrado para orden {}: paymentIntent={}", ordenId, paymentIntentId);
+            var optOrden = ordenRepository.findById(ordenId);
+            if (optOrden.isEmpty()) return;
+            var orden = optOrden.get();
 
-                try {
-                    notificacionService.enviarConfirmacionPedido(orden);
-                } catch (Exception e) {
-                    logger.error("Error al enviar notificacion de orden {}: {}", ordenId, e.getMessage());
-                }
-            });
+            if ("completada".equals(orden.getEstado())) {
+                logger.info("Orden {} ya estaba completada, omitiendo", ordenId);
+                return;
+            }
+
+            orden.setEstado("completada");
+            orden.setIdTransaccionSimulada(paymentIntentId);
+            ordenRepository.save(orden);
+            logger.info("Pago Stripe registrado para orden {}: paymentIntent={}", ordenId, paymentIntentId);
+
+            try {
+                notificacionService.enviarConfirmacionPedido(orden);
+            } catch (Exception e) {
+                logger.error("Error al enviar notificacion de orden {}: {}", ordenId, e.getMessage());
+            }
         }
     }
 
