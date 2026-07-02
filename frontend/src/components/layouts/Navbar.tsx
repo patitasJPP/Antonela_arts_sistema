@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { useAuth } from "../../contexts/AuthContext";                    
 
 const navItems = [
   { path: "/", label: "Inicio" },
@@ -13,6 +14,7 @@ const navItems = [
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { items } = useCart();
+  const { isAuthenticated } = useAuth();                                
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path: string) => {
@@ -52,8 +54,12 @@ const Navbar: React.FC = () => {
           </li>
         ))}
         <li className="nav-links-mobile-only">
-          <Link to="/login" onClick={closeMobile}>
-            <i className="bi bi-person"></i> Iniciar Sesion
+          <Link                                                         
+            to={isAuthenticated ? "/client/panel" : "/login"}
+            onClick={closeMobile}
+          >
+            <i className="bi bi-person"></i>{" "}
+            {isAuthenticated ? "Mi Panel" : "Iniciar Sesion"}            
           </Link>
         </li>
       </ul>
@@ -70,7 +76,10 @@ const Navbar: React.FC = () => {
             <span className="cart-badge">{items.length}</span>
           )}
         </Link>
-        <Link to="/login" className="nav-icons-desktop">
+        <Link                                                          
+          to={isAuthenticated ? "/client/panel" : "/login"}
+          className="nav-icons-desktop"
+        >
           <i className="bi bi-person"></i>
         </Link>
       </div>
