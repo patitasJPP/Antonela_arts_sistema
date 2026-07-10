@@ -1,0 +1,12 @@
+.git/
+.gitignore
+.github/
+README.md
+node_modules/
+.vite/
+dist/
+target/
+*.log
+.env
+.env.local
+.vercel

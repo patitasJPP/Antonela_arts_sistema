@@ -2,9 +2,6 @@
 -- Antonela Art Salon - Inicializacion de Base de Datos
 -- ============================================================
 
--- Crear base de datos (ejecutar manualmente si es necesario)
-CREATE DATABASE antonela_art_salon;
-
 -- ============================================================
 -- TABLAS
 -- ============================================================

@@ -1,0 +1,58 @@
+services:
+
+  db:
+    image: postgres:17-alpine
+    container_name: antonela-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: antonela_art_salon
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: jair
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: antonela-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/antonela_art_salon
+      DB_USER: postgres
+      DB_PASSWORD: jair
+      JWT_SECRET: AntonelaArtSalonSecretKeyForJWT2026Security
+      CORS_ORIGINS: http://localhost:80,http://localhost:3000
+      FRONTEND_URL: http://localhost:80
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-pk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_SUCCESS_URL: http://localhost:80/pago-exitoso
+      STRIPE_CANCEL_URL: http://localhost:80/cart
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: antonela-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:
